@@ -13,6 +13,7 @@ pygame.init()
 screen = pygame.display.set_mode((W_WINDOW, H_WINDOW))
 pygame.display.set_caption('spaceIO')
 
+old_v = (0, 0)
 run_usl = True
 while run_usl:
     #обработка событий
@@ -23,16 +24,24 @@ while run_usl:
     #считаем положение мыши
     if pygame.mouse.get_focused():
         pos = pygame.mouse.get_pos()
-        print(pos)
+        vector = (pos[0] - W_WINDOW//2, pos[1] - H_WINDOW//2)
+        if (vector[0])**2 + (vector[1])**2 <= 50**2:
+            vector = (0, 0)
 
-    #Отправление команд игрока на сервер
-    pl_socket.send('i wanna go left'.encode())
+    #Отправление векторо если он поменялся
+    if vector != old_v:
+        old_v = vector
+        message = '<' + str(vector[0]) + ',' + str(vector[1]) + '>'
+        pl_socket.send(message.encode())
 
     #получаем от сервера новое состояние игроого поля
     data = pl_socket.recv(1024)
     data = data.decode()
 
     #рисуем новое состояние игрового поля
-    print(data)
+    screen.fill('gray20')
+    pygame.draw.circle(screen, (255, 0, 0),
+                       (W_WINDOW//2, H_WINDOW//2), 50)
+    pygame.display.update()
 
 pygame.quit()
