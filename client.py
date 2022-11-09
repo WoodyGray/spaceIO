@@ -1,6 +1,7 @@
 import socket
 import pygame
 
+
 W_WINDOW, H_WINDOW = 600, 600
 #создание сокета IPv4 TCP
 pl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -22,6 +23,7 @@ while run_usl:
             run_usl = False
 
     #считаем положение мыши
+    vector = (0, 0)
     if pygame.mouse.get_focused():
         pos = pygame.mouse.get_pos()
         vector = (pos[0] - W_WINDOW//2, pos[1] - H_WINDOW//2)

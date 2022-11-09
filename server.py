@@ -1,10 +1,15 @@
 import socket
 import pygame
+import random
 
 W_ROOM, H_ROOM = 4000, 4000
 W_S_SCREEN, H_S_SCREEN = 300, 300
 FPS = 100
-START_SIZE = 15
+START_SIZE = 50
+colours = {'0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
+
+def translater(data):
+    pass
 class Player():
     def __init__(self, conn, addr, x, y, r, colour):
         self.conn = conn
@@ -15,6 +20,18 @@ class Player():
         self.colour = colour
 
         self.errors = 0
+
+        self.speed_x = 5
+        self.speed_y = 2
+
+    def update(self):
+        self.x += self.speed_x
+        self.y += self.speed_y
+
+    def change_speed(self, vx, vy):
+        self.speed_x = vx
+        self.speed_y = vy
+
 
 #создание сокета IPv4 TCP
 main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,7 +47,7 @@ clock = pygame.time.Clock()
 
 players = []
 run_usl = True
-while True:
+while run_usl:
     clock.tick(FPS)
     try:
         #проверка на подключение
@@ -38,8 +55,8 @@ while True:
         print('Подключился: ', addr)
         new_socket.setblocking(0)
         new_player = Player(new_socket, addr,
-                            100, 200,
-                            START_SIZE, 'green')
+                            random.randint(0,W_ROOM), random.randint(0, H_ROOM),
+                            START_SIZE, str(random.randint(0,4)))
         players.append(new_player)
     except:
         pass
@@ -48,9 +65,11 @@ while True:
         try:
             data = playr.conn.recv(1024)
             data = data.decode()
+
             print('Получил', data)
         except:
             pass
+        playr.update()
 
     #обробатываем команды игроков
 
@@ -68,18 +87,19 @@ while True:
             playr.conn.close()
             players.remove(playr)
 
-    #рисуем состояние поля
+    # рисуем состояние поля
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run_usl = False
+
 
     screen.fill('BLACK')
     for playr in players:
         x = int(playr.x * W_S_SCREEN/W_ROOM)
         y = int(playr.y * H_S_SCREEN/H_ROOM)
         r = int(playr.r * W_S_SCREEN/W_ROOM)
-
-        pygame.draw.circle(screen, (255, 0, 0), (x, y), r)
+        c = playr.colour
+        pygame.draw.circle(screen, colours[c], (x, y), r)
 
     pygame.display.update()
 
