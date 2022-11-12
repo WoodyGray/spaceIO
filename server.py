@@ -1,15 +1,34 @@
 import socket
 import pygame
 import random
+import math
 
 W_ROOM, H_ROOM = 4000, 4000
 W_S_SCREEN, H_S_SCREEN = 300, 300
 FPS = 100
+RECT_SIZE = 100
 START_SIZE = 50
-colours = {'0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
+colours = {'-1':(0, 150, 0), '0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
 
-def translater(data):
-    pass
+def find(s):
+    otkr = None
+    for i in range(len(s)):
+        if s[i] == '<':
+            otkr = i
+        if s[i] == '>' and otkr is not None:
+            zakr = i
+            res = s[otkr + 1:zakr]
+            res = list(map(int, res.split(',')))
+            return res
+    return ''
+
+class square():
+    def __init__(self, x, y, edge, colour):
+        self.x = x
+        self.y = y
+        self.edge = edge
+        self.colour = colour
+
 class Player():
     def __init__(self, conn, addr, x, y, r, colour):
         self.conn = conn
@@ -21,16 +40,30 @@ class Player():
 
         self.errors = 0
 
-        self.speed_x = 5
-        self.speed_y = 2
+        self.abs_speed = 10
+        self.speed_x = 0
+        self.speed_y = 0
 
     def update(self):
         self.x += self.speed_x
         self.y += self.speed_y
+        if not (self.speed_y == self.speed_x == 0):
+            sqr_x = math.floor(self.x / RECT_SIZE)
+            sqr_y = math.floor(self.y / RECT_SIZE)
+            squares[sqr_x][sqr_y].colour = self.colour
+            print(squares[sqr_x][sqr_y].x)
 
-    def change_speed(self, vx, vy):
-        self.speed_x = vx
-        self.speed_y = vy
+
+    def change_speed(self, v):
+        len_of_v = (v[0]**2 + v[1]**2)**0.5
+        if len_of_v < self.r or (v[0] == 0 and v[1] == 0):
+            self.speed_x = 0
+            self.speed_y = 0
+        else:
+            v[0] = v[0] / len_of_v
+            v[1] = v[1] / len_of_v
+            self.speed_x = v[0] * self.abs_speed
+            self.speed_y = v[1] * self.abs_speed
 
 
 #создание сокета IPv4 TCP
@@ -44,6 +77,17 @@ main_socket.listen(5)
 pygame.init()
 screen = pygame.display.set_mode((W_S_SCREEN, H_S_SCREEN))
 clock = pygame.time.Clock()
+
+#cоздание активных квадратов
+squares = []
+cnt_column = W_ROOM//RECT_SIZE
+cnt_line = H_ROOM//RECT_SIZE
+for i in range(cnt_column):
+    lst = []
+    for j in range(cnt_line):
+        new_square = square(RECT_SIZE*i, RECT_SIZE*j, RECT_SIZE, '-1')
+        lst.append(new_square)
+    squares.append(lst)
 
 players = []
 run_usl = True
@@ -65,13 +109,14 @@ while run_usl:
         try:
             data = playr.conn.recv(1024)
             data = data.decode()
-
-            print('Получил', data)
+            data = find(data)
+            # обробатываем команды игроков
+            playr.change_speed(data)
         except:
             pass
         playr.update()
 
-    #обробатываем команды игроков
+
 
     #отправляем новое состояние поля
     for playr in players:
@@ -94,6 +139,16 @@ while run_usl:
 
 
     screen.fill('BLACK')
+    #отрисовка квадратов
+    for i in range(len(squares)):
+        for j in squares[i]:
+            x = int(j.x * W_S_SCREEN/W_ROOM)
+            y = int(j.y * H_S_SCREEN/H_ROOM)
+            r = int(j.edge * W_S_SCREEN/W_ROOM)
+            c = j.colour
+            pygame.draw.rect(screen, colours[c], (x, y, r, r))
+
+    #отрисовка игроков
     for playr in players:
         x = int(playr.x * W_S_SCREEN/W_ROOM)
         y = int(playr.y * H_S_SCREEN/H_ROOM)
