@@ -6,9 +6,9 @@ import math
 W_ROOM, H_ROOM = 4000, 4000
 W_S_SCREEN, H_S_SCREEN = 300, 300
 FPS = 100
-RECT_SIZE = 100
+RECT_SIZE = 40
 START_SIZE = 50
-colours = {'-1':(0, 150, 0), '0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
+colours = {'-1':(8, 8, 8), '0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
 
 def find(s):
     otkr = None
@@ -29,6 +29,8 @@ class square():
         self.edge = edge
         self.colour = colour
 
+
+
 class Player():
     def __init__(self, conn, addr, x, y, r, colour):
         self.conn = conn
@@ -44,12 +46,15 @@ class Player():
         self.speed_x = 0
         self.speed_y = 0
 
+        self.pl_space = []
+
     def update(self):
         self.x += self.speed_x
         self.y += self.speed_y
-        if not (self.speed_y == self.speed_x == 0):
+        if not (self.speed_y == self.speed_x == 0) and ():
             sqr_x = math.floor(self.x / RECT_SIZE)
             sqr_y = math.floor(self.y / RECT_SIZE)
+
             squares[sqr_x][sqr_y].colour = self.colour
             print(squares[sqr_x][sqr_y].x)
 
@@ -98,8 +103,10 @@ while run_usl:
         new_socket, addr = main_socket.accept()
         print('Подключился: ', addr)
         new_socket.setblocking(0)
+        new_x = random.randint(0,W_ROOM)
+        new_y = random.randint(0, H_ROOM)
         new_player = Player(new_socket, addr,
-                            random.randint(0,W_ROOM), random.randint(0, H_ROOM),
+                            new_x, new_y,
                             START_SIZE, str(random.randint(0,4)))
         players.append(new_player)
     except:
@@ -142,9 +149,9 @@ while run_usl:
     #отрисовка квадратов
     for i in range(len(squares)):
         for j in squares[i]:
-            x = int(j.x * W_S_SCREEN/W_ROOM)
-            y = int(j.y * H_S_SCREEN/H_ROOM)
-            r = int(j.edge * W_S_SCREEN/W_ROOM)
+            x = round(j.x * W_S_SCREEN/W_ROOM)
+            y = round(j.y * H_S_SCREEN/H_ROOM)
+            r = round(j.edge * W_S_SCREEN/W_ROOM)
             c = j.colour
             pygame.draw.rect(screen, colours[c], (x, y, r, r))
 
