@@ -29,6 +29,8 @@ class square():
         self.edge = edge
         self.colour = colour
 
+        self.usl_static = True
+
 
 
 class Player():
@@ -39,6 +41,7 @@ class Player():
         self.y = y
         self.r = r
         self.colour = colour
+
 
         self.errors = 0
 
@@ -51,17 +54,19 @@ class Player():
     def update(self):
         self.x += self.speed_x
         self.y += self.speed_y
-        if not (self.speed_y == self.speed_x == 0) and ():
-            sqr_x = math.floor(self.x / RECT_SIZE)
-            sqr_y = math.floor(self.y / RECT_SIZE)
+        sqr_x = math.floor(self.x / RECT_SIZE)
+        sqr_y = math.floor(self.y / RECT_SIZE)
 
+        print(self.x, self.y)
+        if not (self.speed_y == self.speed_x == 0) and (squares[sqr_x][sqr_y].colour != self.colour):
             squares[sqr_x][sqr_y].colour = self.colour
-            print(squares[sqr_x][sqr_y].x)
 
 
     def change_speed(self, v):
         len_of_v = (v[0]**2 + v[1]**2)**0.5
-        if len_of_v < self.r or (v[0] == 0 and v[1] == 0):
+        if len_of_v < self.r or (v[0] == 0 and v[1] == 0) or \
+                (self.x<=0 + START_SIZE or self.x>=W_ROOM+START_SIZE) or \
+                (self.y<=0 + START_SIZE or self.y>=H_ROOM+START_SIZE):
             self.speed_x = 0
             self.speed_y = 0
         else:
