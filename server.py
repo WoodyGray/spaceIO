@@ -52,8 +52,10 @@ class Player():
         self.pl_space = []
 
     def update(self):
-        self.x += self.speed_x
-        self.y += self.speed_y
+        if (self.x + self.speed_x) <= (W_ROOM-START_SIZE) and (self.x + self.speed_x) >= (0+START_SIZE):
+            self.x += self.speed_x
+        if (self.y + self.speed_y) <= (H_ROOM - START_SIZE) and (self.y + self.speed_y) >= (0 + START_SIZE):
+            self.y += self.speed_y
         sqr_x = math.floor(self.x / RECT_SIZE)
         sqr_y = math.floor(self.y / RECT_SIZE)
 
@@ -64,9 +66,7 @@ class Player():
 
     def change_speed(self, v):
         len_of_v = (v[0]**2 + v[1]**2)**0.5
-        if len_of_v < self.r or (v[0] == 0 and v[1] == 0) or \
-                (self.x<=0 + START_SIZE or self.x>=W_ROOM+START_SIZE) or \
-                (self.y<=0 + START_SIZE or self.y>=H_ROOM+START_SIZE):
+        if len_of_v < self.r or (v[0] == 0 and v[1] == 0):
             self.speed_x = 0
             self.speed_y = 0
         else:
