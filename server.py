@@ -108,8 +108,8 @@ while run_usl:
         new_socket, addr = main_socket.accept()
         print('Подключился: ', addr)
         new_socket.setblocking(0)
-        new_x = random.randint(0,W_ROOM)
-        new_y = random.randint(0, H_ROOM)
+        new_x = (random.randint(RECT_SIZE, W_ROOM - RECT_SIZE) // RECT_SIZE) * RECT_SIZE
+        new_y = (random.randint(RECT_SIZE, H_ROOM - RECT_SIZE) // RECT_SIZE) * RECT_SIZE
         new_player = Player(new_socket, addr,
                             new_x, new_y,
                             START_SIZE, str(random.randint(0,4)))
@@ -133,7 +133,14 @@ while run_usl:
     #отправляем новое состояние поля
     for playr in players:
         try:
-            playr.conn.send('Новое состояние игры'.encode())
+            mess = '<'
+            psevdo_x = playr.x - (playr.x // RECT_SIZE * RECT_SIZE)
+            mess += str(psevdo_x)
+            psevdo_y = playr.y - (playr.y // RECT_SIZE * RECT_SIZE)
+            mess += ',' + str(psevdo_y)
+
+            mess += '>'
+            playr.conn.send(mess.encode())
             playr.errors = 0
         except:
             playr.errors += 1
