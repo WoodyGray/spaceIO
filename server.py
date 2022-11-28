@@ -8,19 +8,32 @@ W_S_SCREEN, H_S_SCREEN = 300, 300
 FPS = 100
 RECT_SIZE = 40
 START_SIZE = 50
-colours = {'-1':(8, 8, 8), '0':(255, 255, 0), '1':(255, 0, 0), '2':(0, 255, 0), '3':(0, 255, 255), '4':(128, 0, 128)}
+colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '4':(0, 255, 255), '5':(128, 0, 128)}
 
 def find(s):
     otkr = None
     for i in range(len(s)):
         if s[i] == '<':
             otkr = i
+        
         if s[i] == '>' and otkr is not None:
             zakr = i
             res = s[otkr + 1:zakr]
-            res = list(map(int, res.split(',')))
+            res = list(res.split(','))
             return res
     return ''
+
+def dw_list(data):
+    res = []
+    lst = []
+    for i in range(len(data)):
+        if data[i][1] == '{' or data[i][0] == '{' or len(data[i]) == 1:
+            lst.append(data[i][-1])
+        if data[i][-1] == ']' or data[i][-1] == '}':
+            lst.append(data[i][0])
+            res.append(lst)
+            lst = []
+    return res
 
 class square():
     def __init__(self, x, y, edge, colour):
@@ -95,7 +108,7 @@ cnt_line = H_ROOM//RECT_SIZE
 for i in range(cnt_column):
     lst = []
     for j in range(cnt_line):
-        new_square = square(RECT_SIZE*i, RECT_SIZE*j, RECT_SIZE, '-1')
+        new_square = square(RECT_SIZE*i, RECT_SIZE*j, RECT_SIZE, '0')
         lst.append(new_square)
     squares.append(lst)
 
@@ -138,7 +151,7 @@ while run_usl:
             mess += str(psevdo_x)
             psevdo_y = playr.y - (playr.y // RECT_SIZE * RECT_SIZE)
             mess += ',' + str(psevdo_y)
-
+            mess += ',[{2,2},{3,3}]'
             mess += '>'
             playr.conn.send(mess.encode())
             playr.errors = 0
