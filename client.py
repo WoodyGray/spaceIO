@@ -2,7 +2,7 @@ import socket
 import pygame
 
 
-W_WINDOW, H_WINDOW = 600, 600
+W_WINDOW, H_WINDOW = 200, 200
 colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '4':(0, 255, 255), '5':(128, 0, 128)}
 START_SIZE = 15
 RECT_SIZE = START_SIZE * 5 // 4
@@ -26,7 +26,7 @@ def dw_list(data):
     res = []
     lst = []
     for i in range(len(data)):
-        if data[i][1] == '{' or data[i][0] == '{' or len(data[i]) == 1:
+        if len(data[i]) == 1 or data[i][1] == '{' or data[i][0] == '{' or len(data[i]) == 1:
             lst.append(data[i][-1])
         if data[i][-1] == ']' or data[i][-1] == '}':
             lst.append(data[i][0])
@@ -68,7 +68,7 @@ while run_usl:
         pl_socket.send(message.encode())
 
     #получаем от сервера новое состояние игроого поля
-    data = pl_socket.recv(1024)
+    data = pl_socket.recv(2**22)
     data = data.decode()
     data = find(data)
 
@@ -77,11 +77,14 @@ while run_usl:
     psevdo_x = int(data[0]) * RECT_SIZE // SER_RECT_SIZE
     psevdo_y = int(data[1]) * RECT_SIZE // SER_RECT_SIZE
     new_lst_rect = dw_list(data[2:])
+
     for i in range(psevdo_x - RECT_SIZE, RECT_SIZE + W_WINDOW, RECT_SIZE):
         for j in range(psevdo_y - RECT_SIZE, RECT_SIZE + H_WINDOW, RECT_SIZE):
             y = j // RECT_SIZE
             x = i // RECT_SIZE
-            now_color = new_lst_rect[x][y]
+            r = RECT_SIZE
+            now_color = colours[new_lst_rect[x][y]]
+            pygame.draw.rect(screen, now_color, (i, j, r, r))
 
 
     pygame.draw.circle(screen, (255, 0, 0),

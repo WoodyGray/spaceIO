@@ -55,6 +55,8 @@ class Player():
         self.r = r
         self.colour = colour
 
+        self.W_PL_WINDOW = 200
+        self.H_PL_WINDOW = 200
 
         self.errors = 0
 
@@ -62,7 +64,7 @@ class Player():
         self.speed_x = 0
         self.speed_y = 0
 
-        self.pl_space = []
+        self.pl_review = '[]'
 
     def update(self):
         if (self.x + self.speed_x) <= (W_ROOM-START_SIZE) and (self.x + self.speed_x) >= (0+START_SIZE):
@@ -72,7 +74,6 @@ class Player():
         sqr_x = math.floor(self.x / RECT_SIZE)
         sqr_y = math.floor(self.y / RECT_SIZE)
 
-        print(self.x, self.y)
         if not (self.speed_y == self.speed_x == 0) and (squares[sqr_x][sqr_y].colour != self.colour):
             squares[sqr_x][sqr_y].colour = self.colour
 
@@ -87,6 +88,31 @@ class Player():
             v[1] = v[1] / len_of_v
             self.speed_x = v[0] * self.abs_speed
             self.speed_y = v[1] * self.abs_speed
+
+    def set_review(self, x, y):
+        psevdo_x = x - (self.W_PL_WINDOW // 2)
+        psevdo_y = y - (self.H_PL_WINDOW // 2)
+        copy_psevdo_y = psevdo_y
+        cnt_line = ''
+        self.pl_review = '[]'
+        while psevdo_x < (self.x + (self.W_PL_WINDOW // 2)) and psevdo_x < W_ROOM:
+            while copy_psevdo_y < (self.y + (self.H_PL_WINDOW // 2)) and copy_psevdo_y < H_ROOM:
+                sqr = squares[psevdo_x // RECT_SIZE][psevdo_y // RECT_SIZE]
+                if len(cnt_line) == 0:
+                    cnt_line += sqr.colour
+                else:
+                    cnt_line += ',' + sqr.colour
+                copy_psevdo_y += RECT_SIZE
+            cnt_line = '{' + cnt_line + '}'
+            if len(self.pl_review) == 2:
+                self.pl_review = self.pl_review[0:-1] + cnt_line + ']'
+            else:
+                self.pl_review = self.pl_review[0:-1] + ',' + cnt_line + ']'
+            cnt_line = ''
+            psevdo_x += RECT_SIZE
+            copy_psevdo_y = psevdo_y
+
+
 
 
 #создание сокета IPv4 TCP
@@ -135,6 +161,7 @@ while run_usl:
             data = playr.conn.recv(1024)
             data = data.decode()
             data = find(data)
+            print(data)
             # обробатываем команды игроков
             playr.change_speed(data)
         except:
@@ -151,7 +178,8 @@ while run_usl:
             mess += str(psevdo_x)
             psevdo_y = playr.y - (playr.y // RECT_SIZE * RECT_SIZE)
             mess += ',' + str(psevdo_y)
-            mess += ',[{2,2},{3,3}]'
+            playr.set_review(psevdo_x, psevdo_y)
+            mess += ',' + str(playr.pl_review)
             mess += '>'
             playr.conn.send(mess.encode())
             playr.errors = 0
