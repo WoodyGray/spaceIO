@@ -19,7 +19,7 @@ def find(s):
         if s[i] == '>' and otkr is not None:
             zakr = i
             res = s[otkr + 1:zakr]
-            res = list(res.split(','))
+            res = list(map(int, res.split(',')))
             return res
     return ''
 
@@ -55,8 +55,8 @@ class Player():
         self.r = r
         self.colour = colour
 
-        self.W_PL_WINDOW = 200
-        self.H_PL_WINDOW = 200
+        self.W_PL_WINDOW = 600
+        self.H_PL_WINDOW = 600
 
         self.errors = 0
 
@@ -86,18 +86,18 @@ class Player():
         else:
             v[0] = v[0] / len_of_v
             v[1] = v[1] / len_of_v
-            self.speed_x = v[0] * self.abs_speed
-            self.speed_y = v[1] * self.abs_speed
+            self.speed_x = int(v[0] * self.abs_speed)
+            self.speed_y = int(v[1] * self.abs_speed)
 
-    def set_review(self, x, y):
-        psevdo_x = x - (self.W_PL_WINDOW // 2)
-        psevdo_y = y - (self.H_PL_WINDOW // 2)
+    def set_review(self):
+        psevdo_x = int(((playr.x // RECT_SIZE) * RECT_SIZE) - (self.W_PL_WINDOW // 2))
+        psevdo_y = int(((playr.y // RECT_SIZE) * RECT_SIZE) - (self.H_PL_WINDOW // 2))
         copy_psevdo_y = psevdo_y
         cnt_line = ''
         self.pl_review = '[]'
         while psevdo_x < (self.x + (self.W_PL_WINDOW // 2)) and psevdo_x < W_ROOM:
             while copy_psevdo_y < (self.y + (self.H_PL_WINDOW // 2)) and copy_psevdo_y < H_ROOM:
-                sqr = squares[psevdo_x // RECT_SIZE][psevdo_y // RECT_SIZE]
+                sqr = squares[psevdo_x // RECT_SIZE][copy_psevdo_y// RECT_SIZE]
                 if len(cnt_line) == 0:
                     cnt_line += sqr.colour
                 else:
@@ -161,10 +161,9 @@ while run_usl:
             data = playr.conn.recv(1024)
             data = data.decode()
             data = find(data)
-            print(data)
             # обробатываем команды игроков
             playr.change_speed(data)
-        except:
+        except (Exception):
             pass
         playr.update()
 
@@ -174,11 +173,11 @@ while run_usl:
     for playr in players:
         try:
             mess = '<'
-            psevdo_x = playr.x - (playr.x // RECT_SIZE * RECT_SIZE)
+            psevdo_x = playr.x - ((playr.x // RECT_SIZE) * RECT_SIZE)
             mess += str(psevdo_x)
-            psevdo_y = playr.y - (playr.y // RECT_SIZE * RECT_SIZE)
+            psevdo_y = playr.y - ((playr.y // RECT_SIZE) * RECT_SIZE)
             mess += ',' + str(psevdo_y)
-            playr.set_review(psevdo_x, psevdo_y)
+            playr.set_review()
             mess += ',' + str(playr.pl_review)
             mess += '>'
             playr.conn.send(mess.encode())
@@ -207,7 +206,6 @@ while run_usl:
             r = round(j.edge * W_S_SCREEN/W_ROOM)
             c = j.colour
             pygame.draw.rect(screen, colours[c], (x, y, r, r))
-
     #отрисовка игроков
     for playr in players:
         x = int(playr.x * W_S_SCREEN/W_ROOM)

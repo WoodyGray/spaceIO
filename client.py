@@ -2,7 +2,7 @@ import socket
 import pygame
 
 
-W_WINDOW, H_WINDOW = 200, 200
+W_WINDOW, H_WINDOW = 600, 600
 colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '4':(0, 255, 255), '5':(128, 0, 128)}
 START_SIZE = 15
 RECT_SIZE = START_SIZE * 5 // 4
@@ -58,9 +58,8 @@ while run_usl:
     if pygame.mouse.get_focused():
         pos = pygame.mouse.get_pos()
         vector = (pos[0] - W_WINDOW//2, pos[1] - H_WINDOW//2)
-        if (vector[0])**2 + (vector[1])**2 <= 50**2:
+        if (vector[0])**2 + (vector[1])**2 <= START_SIZE**2:
             vector = (0, 0)
-
     #Отправление векторо если он поменялся
     if vector != old_v:
         old_v = vector
@@ -68,23 +67,26 @@ while run_usl:
         pl_socket.send(message.encode())
 
     #получаем от сервера новое состояние игроого поля
-    data = pl_socket.recv(2**22)
+    data = pl_socket.recv(2**19)
     data = data.decode()
     data = find(data)
 
     #рисуем новое состояние игрового поля
     screen.fill('gray20')
-    psevdo_x = int(data[0]) * RECT_SIZE // SER_RECT_SIZE
-    psevdo_y = int(data[1]) * RECT_SIZE // SER_RECT_SIZE
+    psevdo_x = int(data[0]) - SER_RECT_SIZE
+    psevdo_y = int(data[1]) - SER_RECT_SIZE
     new_lst_rect = dw_list(data[2:])
+    print(new_lst_rect)
+    cnt_column = W_WINDOW // SER_RECT_SIZE
+    cnt_line = H_WINDOW // SER_RECT_SIZE
+    for i in range(cnt_column):
+        for j in range(cnt_line):
+            y = psevdo_y + j * SER_RECT_SIZE
+            x = psevdo_x + i * SER_RECT_SIZE
+            r = SER_RECT_SIZE
+            now_color = colours[new_lst_rect[i][j]]
 
-    for i in range(psevdo_x - RECT_SIZE, RECT_SIZE + W_WINDOW, RECT_SIZE):
-        for j in range(psevdo_y - RECT_SIZE, RECT_SIZE + H_WINDOW, RECT_SIZE):
-            y = j // RECT_SIZE
-            x = i // RECT_SIZE
-            r = RECT_SIZE
-            now_color = colours[new_lst_rect[x][y]]
-            pygame.draw.rect(screen, now_color, (i, j, r, r))
+            pygame.draw.rect(screen, now_color, (x, y, r, r))
 
 
     pygame.draw.circle(screen, (255, 0, 0),
