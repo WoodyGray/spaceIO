@@ -4,7 +4,7 @@ import pygame
 
 W_WINDOW, H_WINDOW = 600, 600
 colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '4':(0, 255, 255), '5':(128, 0, 128)}
-START_SIZE = 15
+START_SIZE = 50
 RECT_SIZE = START_SIZE * 5 // 4
 SER_RECT_SIZE = 40
 
@@ -73,14 +73,11 @@ while run_usl:
 
     #рисуем новое состояние игрового поля
     screen.fill('gray20')
-    psevdo_x = int(data[0]) - SER_RECT_SIZE
-    psevdo_y = int(data[1]) - SER_RECT_SIZE
+    psevdo_x = -int(data[0])
+    psevdo_y = -int(data[1])
     new_lst_rect = dw_list(data[2:])
-    print(new_lst_rect)
-    cnt_column = W_WINDOW // SER_RECT_SIZE
-    cnt_line = H_WINDOW // SER_RECT_SIZE
-    for i in range(cnt_column):
-        for j in range(cnt_line):
+    for i in range(len(new_lst_rect)):
+        for j in range(len(new_lst_rect[i])):
             y = psevdo_y + j * SER_RECT_SIZE
             x = psevdo_x + i * SER_RECT_SIZE
             r = SER_RECT_SIZE

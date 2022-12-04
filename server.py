@@ -90,13 +90,13 @@ class Player():
             self.speed_y = int(v[1] * self.abs_speed)
 
     def set_review(self):
-        psevdo_x = int(((playr.x // RECT_SIZE) * RECT_SIZE) - (self.W_PL_WINDOW // 2))
-        psevdo_y = int(((playr.y // RECT_SIZE) * RECT_SIZE) - (self.H_PL_WINDOW // 2))
+        psevdo_x = ((self.x // RECT_SIZE) * RECT_SIZE) - (self.W_PL_WINDOW // 2)
+        psevdo_y = ((self.y // RECT_SIZE) * RECT_SIZE) - (self.H_PL_WINDOW // 2)
         copy_psevdo_y = psevdo_y
         cnt_line = ''
         self.pl_review = '[]'
-        while psevdo_x < (self.x + (self.W_PL_WINDOW // 2)) and psevdo_x < W_ROOM:
-            while copy_psevdo_y < (self.y + (self.H_PL_WINDOW // 2)) and copy_psevdo_y < H_ROOM:
+        while psevdo_x <= (self.x + (self.W_PL_WINDOW // 2)) and psevdo_x < W_ROOM:
+            while copy_psevdo_y <= (self.y + (self.H_PL_WINDOW // 2)) and copy_psevdo_y < H_ROOM:
                 sqr = squares[psevdo_x // RECT_SIZE][copy_psevdo_y// RECT_SIZE]
                 if len(cnt_line) == 0:
                     cnt_line += sqr.colour
