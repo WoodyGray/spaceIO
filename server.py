@@ -23,18 +23,6 @@ def find(s):
             return res
     return ''
 
-def dw_list(data):
-    res = []
-    lst = []
-    for i in range(len(data)):
-        if data[i][1] == '{' or data[i][0] == '{' or len(data[i]) == 1:
-            lst.append(data[i][-1])
-        if data[i][-1] == ']' or data[i][-1] == '}':
-            lst.append(data[i][0])
-            res.append(lst)
-            lst = []
-    return res
-
 class square():
     def __init__(self, x, y, edge, colour):
         self.x = x
@@ -43,6 +31,7 @@ class square():
         self.colour = colour
 
         self.usl_static = True
+        self.connection = None
 
 
 
@@ -54,17 +43,23 @@ class Player():
         self.y = y
         self.r = r
         self.colour = colour
-
-        self.W_PL_WINDOW = 600
-        self.H_PL_WINDOW = 600
-
         self.errors = 0
 
+        #for change_speed
         self.abs_speed = 10
         self.speed_x = 0
         self.speed_y = 0
 
+        #for set_review
         self.pl_review = '[]'
+        self.W_PL_WINDOW = 600
+        self.H_PL_WINDOW = 600
+
+        #for assignment
+        self.trajectory = []
+        self.max_sqr = [0, 0]
+        self.min_sqr = [W_ROOM, H_ROOM]
+
 
     def update(self):
         if (self.x + self.speed_x) <= (W_ROOM-START_SIZE) and (self.x + self.speed_x) >= (0+START_SIZE):
@@ -74,8 +69,26 @@ class Player():
         sqr_x = math.floor(self.x / RECT_SIZE)
         sqr_y = math.floor(self.y / RECT_SIZE)
 
-        if not (self.speed_y == self.speed_x == 0) and (squares[sqr_x][sqr_y].colour != self.colour):
-            squares[sqr_x][sqr_y].colour = self.colour
+        if not (self.speed_y == self.speed_x == 0):
+            if (squares[sqr_x][sqr_y].connection != self.conn):
+                squares[sqr_x][sqr_y].colour = self.colour
+                squares[sqr_x][sqr_y].connection = self.conn
+                squares[sqr_x][sqr_y].usl_static = False
+                self.trajectory.append([sqr_x,sqr_y])
+                if sqr_x > self.max_sqr[0] or sqr_y > self.max_sqr[1]:
+                    self.max_sqr[0] = sqr_x
+                    self.max_sqr[1] = sqr_y
+                if sqr_x < self.min_sqr[0] or sqr_y < self.min_sqr[1]:
+                    self.min_sqr[0] = sqr_x
+                    self.min_sqr[1] = sqr_y
+            elif squares[sqr_x][sqr_y].usl_static and len(self.trajectory) > 0:
+                print(self.trajectory)
+                self.assignment()
+                self.trajectory = []
+                self.max_sqr[0] = 0
+                self.max_sqr[1] = 0
+                self.min_sqr[0] = 0
+                self.min_sqr[1] = 0
 
 
     def change_speed(self, v):
@@ -112,6 +125,29 @@ class Player():
             psevdo_x += RECT_SIZE
             copy_psevdo_y = psevdo_y
 
+    def create_start_space(self, size):
+        for i in range(size):
+            for j in range(size):
+                x = (self.x - RECT_SIZE*(size//2) + RECT_SIZE*i)//RECT_SIZE
+                y = (self.y - RECT_SIZE*(size//2)  + RECT_SIZE * j)//RECT_SIZE
+                squares[x][y].colour = self.colour
+                squares[x][y].connection = self.conn
+
+    def assignment(self):
+        first_id = None
+        for i in range(self.min_sqr[0], self.max_sqr[0] + 1):
+            for j in range(self.min_sqr[1], self.max_sqr[1] + 1):
+                if [i, j] in self.trajectory:
+                    if first_id is None and squares[i][j].usl_static:
+                        first_id = j
+                    elif first_id is not None:
+                        for l in range(first_id, j + 1):
+                            squares[i][l].colour = self.colour
+                            squares[i][l].connection = self.conn
+                            squares[i][l].usl_static = True
+                        first_id = None
+
+
 
 
 
@@ -147,11 +183,13 @@ while run_usl:
         new_socket, addr = main_socket.accept()
         print('Подключился: ', addr)
         new_socket.setblocking(0)
-        new_x = (random.randint(RECT_SIZE, W_ROOM - RECT_SIZE) // RECT_SIZE) * RECT_SIZE
-        new_y = (random.randint(RECT_SIZE, H_ROOM - RECT_SIZE) // RECT_SIZE) * RECT_SIZE
+        new_x = (random.randint(RECT_SIZE * 2, W_ROOM - RECT_SIZE * 2) // RECT_SIZE) * RECT_SIZE
+        new_y = (random.randint(RECT_SIZE * 2, H_ROOM - RECT_SIZE * 2) // RECT_SIZE) * RECT_SIZE
         new_player = Player(new_socket, addr,
                             new_x, new_y,
-                            START_SIZE, str(random.randint(0,4)))
+                            START_SIZE, str(random.randint(1, 5)))
+        new_player.create_start_space(3)
+
         players.append(new_player)
     except:
         pass
@@ -188,6 +226,11 @@ while run_usl:
     #чистим список от отвалившихся игроков
     for playr in players:
         if playr.errors == 300:
+            for i in range(len(squares)):
+                for j in squares[i]:
+                    if j.connection == playr.conn:
+                        j.colour = '0'
+
             playr.conn.close()
             players.remove(playr)
 
@@ -204,6 +247,7 @@ while run_usl:
             x = round(j.x * W_S_SCREEN/W_ROOM)
             y = round(j.y * H_S_SCREEN/H_ROOM)
             r = round(j.edge * W_S_SCREEN/W_ROOM)
+
             c = j.colour
             pygame.draw.rect(screen, colours[c], (x, y, r, r))
     #отрисовка игроков

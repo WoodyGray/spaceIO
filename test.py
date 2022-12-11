@@ -1,4 +1,2 @@
-package = [1, 2, 3]
-package = str(package)
-package = '{' + package[1:-1] + '}'
-print(package)
+for i in range(0, 3):
+    print(i)
