@@ -57,6 +57,8 @@ class Player():
 
         #for assignment
         self.trajectory = []
+        self.the_most_max_sqr = [0, 0]
+        self.the_most_min_sqr = [W_ROOM, H_ROOM]
         self.max_sqr = [0, 0]
         self.min_sqr = [W_ROOM, H_ROOM]
 
@@ -72,6 +74,7 @@ class Player():
         if not (self.speed_y == self.speed_x == 0):
             if (squares[sqr_x][sqr_y].connection != self.conn):
                 squares[sqr_x][sqr_y].colour = self.colour
+                squares[sqr_x][sqr_y].connection = self.conn
                 squares[sqr_x][sqr_y].usl_static = False
                 self.trajectory.append([sqr_x,sqr_y])
                 if sqr_x > self.max_sqr[0]:
@@ -83,11 +86,20 @@ class Player():
                 if sqr_y < self.min_sqr[1]:
                     self.min_sqr[1] = sqr_y
             elif squares[sqr_x][sqr_y].usl_static and len(self.trajectory) > 0:
-                print(self.trajectory, self.min_sqr, self.max_sqr)
-                self.assignment()
+                if self.max_sqr[0] > self.the_most_max_sqr[0]:
+                    self.the_most_max_sqr[0] = self.max_sqr[0]
+                if self.max_sqr[1] > self.the_most_max_sqr[1]:
+                    self.the_most_max_sqr[1] = self.max_sqr[1]
+                if self.min_sqr[0] < self.the_most_min_sqr[0]:
+                    self.the_most_min_sqr[0] = self.min_sqr[0]
+                if self.min_sqr[1] < self.the_most_min_sqr[1]:
+                    self.the_most_min_sqr[1] = self.min_sqr[1]
+                self.assignment(self.min_sqr, self.max_sqr)
+                self.assignment(self.the_most_min_sqr, self.the_most_max_sqr)
                 self.trajectory = []
                 self.max_sqr[0] = 0
                 self.max_sqr[1] = 0
+
                 self.min_sqr[0] = W_ROOM
                 self.min_sqr[1] = H_ROOM
 
@@ -134,22 +146,28 @@ class Player():
                 squares[x][y].colour = self.colour
                 squares[x][y].connection = self.conn
 
-    def assignment(self):
-        first_id = None
-        for i in range(self.min_sqr[0], self.max_sqr[0] + 1):
-            for j in range(self.min_sqr[1], self.max_sqr[1] + 1):
-                if [i, j] in self.trajectory or squares[i][j].usl_static:
-                    if first_id is None:
-                        first_id = j
-                    else:
-                        if j - first_id > 1:
-                            for l in range(first_id, j + 1):
-                                if squares[i][l].connection != self.conn:
-                                    squares[i][l].colour = self.colour
-                                    squares[i][l].connection = self.conn
-                                    squares[i][l].usl_static = True
-                            first_id = None
-            first_id = None
+    def assignment(self, m_sqr, M_sqr):
+        upper_border = []
+        lower_border = []
+        for i in range(m_sqr[0], M_sqr[0] + 1):
+            for j in range(m_sqr[1], M_sqr[1] + 1):
+                if squares[i][j].connection == self.conn:
+                    upper_border.append([i, j])
+                    break
+            for j in range(M_sqr[1] + 1, m_sqr[1], - 1):
+                if squares[i][j].connection == self.conn:
+                    lower_border.append([i, j])
+                    break
+        min_len = min(len(upper_border), len(lower_border))
+        print(len(upper_border), len(lower_border))
+        for i in range(min_len):
+            x = upper_border[i][0]
+            for j in range(upper_border[i][1], lower_border[i][1] + 1):
+                squares[x][j].connection = self.conn
+                squares[x][j].colour = self.colour
+
+
+
 
 
 
