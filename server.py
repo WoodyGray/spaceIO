@@ -72,23 +72,24 @@ class Player():
         if not (self.speed_y == self.speed_x == 0):
             if (squares[sqr_x][sqr_y].connection != self.conn):
                 squares[sqr_x][sqr_y].colour = self.colour
-                squares[sqr_x][sqr_y].connection = self.conn
                 squares[sqr_x][sqr_y].usl_static = False
                 self.trajectory.append([sqr_x,sqr_y])
-                if sqr_x > self.max_sqr[0] or sqr_y > self.max_sqr[1]:
+                if sqr_x > self.max_sqr[0]:
                     self.max_sqr[0] = sqr_x
+                if sqr_y > self.max_sqr[1]:
                     self.max_sqr[1] = sqr_y
-                if sqr_x < self.min_sqr[0] or sqr_y < self.min_sqr[1]:
+                if sqr_x < self.min_sqr[0]:
                     self.min_sqr[0] = sqr_x
+                if sqr_y < self.min_sqr[1]:
                     self.min_sqr[1] = sqr_y
             elif squares[sqr_x][sqr_y].usl_static and len(self.trajectory) > 0:
-                print(self.trajectory)
+                print(self.trajectory, self.min_sqr, self.max_sqr)
                 self.assignment()
                 self.trajectory = []
                 self.max_sqr[0] = 0
                 self.max_sqr[1] = 0
-                self.min_sqr[0] = 0
-                self.min_sqr[1] = 0
+                self.min_sqr[0] = W_ROOM
+                self.min_sqr[1] = H_ROOM
 
 
     def change_speed(self, v):
@@ -137,15 +138,18 @@ class Player():
         first_id = None
         for i in range(self.min_sqr[0], self.max_sqr[0] + 1):
             for j in range(self.min_sqr[1], self.max_sqr[1] + 1):
-                if [i, j] in self.trajectory:
-                    if first_id is None and squares[i][j].usl_static:
+                if [i, j] in self.trajectory or squares[i][j].usl_static:
+                    if first_id is None:
                         first_id = j
-                    elif first_id is not None:
-                        for l in range(first_id, j + 1):
-                            squares[i][l].colour = self.colour
-                            squares[i][l].connection = self.conn
-                            squares[i][l].usl_static = True
-                        first_id = None
+                    else:
+                        if j - first_id > 1:
+                            for l in range(first_id, j + 1):
+                                if squares[i][l].connection != self.conn:
+                                    squares[i][l].colour = self.colour
+                                    squares[i][l].connection = self.conn
+                                    squares[i][l].usl_static = True
+                            first_id = None
+            first_id = None
 
 
 
