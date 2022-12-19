@@ -8,19 +8,46 @@ START_SIZE = 50
 RECT_SIZE = START_SIZE * 5 // 4
 SER_RECT_SIZE = 40
 
+class package():
+    def __init__(self, data):
+        self.data = data
 
-def find(s):
-    otkr = None
-    for i in range(len(s)):
-        if s[i] == '<':
-            otkr = i
+        self.otkr_package = None
+        self.zakr_package = None
 
-        if s[i] == '>' and otkr is not None:
-            zakr = i
-            res = s[otkr + 1:zakr]
-            res = list(res.split(','))
-            return res
-    return ''
+        self.enemys = []
+
+    def find(self):
+        for i in range(len(self.data)):
+            if self.data[i] == '<':
+                self.otkr_package = i
+
+            if self.data[i] == '>' and self.otkr_package is not None:
+                self.zakr_package = i
+                res = self.data[self.otkr_package + 1:self.zakr_package]
+                res = list(res.split(','))
+                self.data = res
+        self.data = ''
+
+
+
+    def find_enemys(self):
+        for j in range(self.otkr_package+2, self.zakr_package):
+            if data[j] == '(':
+                otkr_d = j
+            if data[j] == ')':
+                if otkr_d is not None:
+                    enemy = []
+                    enemy.append(int(data[j+1]))
+                    enemy.append(int(data[j + 3]))
+                    enemy.append(data[j + 5])
+                    self.enemys.append(enemy)
+                    otkr_d = None
+                else:
+                    self.data = self.data[0] + self.data[j+1:]
+                    break
+        self.enemys = []
+
 
 def dw_list(data):
     res = []
@@ -69,7 +96,9 @@ while run_usl:
     #получаем от сервера новое состояние игроого поля
     data = pl_socket.recv(2**19)
     data = data.decode()
-    data = find(data)
+    Package = package(data)
+    enemys = Package.find_enemys()
+    data = Package.find()
 
     #рисуем новое состояние игрового поля
     screen.fill('gray20')

@@ -51,6 +51,7 @@ class Player():
         self.speed_y = 0
 
         #for set_review
+        self.enemys = ''
         self.pl_review = '[]'
         self.W_PL_WINDOW = 600
         self.H_PL_WINDOW = 600
@@ -227,12 +228,26 @@ while run_usl:
             pass
         playr.update()
 
+    for i in range(len(players)):
+        for j in range(i+1, len(players)):
+            dist_x = abs(players[i].x - players[j].x)
+            dist_y = abs(players[i].y - players[j].y)
+
+            # i видит j
+            if (dist_x <= (players[i].W_PL_WINDOW//2 + START_SIZE)) and \
+                (dist_y <= (players[i].H_PL_WINDOW//2 + START_SIZE)):
+                players[i].enemys += '(' + players[j].x + ',' + str(players[j].y) + ',' + str(players[j].colour) + ')'
+
+            # j видит i
+            if (dist_x <= (players[j].W_PL_WINDOW//2 + START_SIZE)) and \
+                (dist_y <= (players[j].H_PL_WINDOW//2 + START_SIZE)):
+                players[j].enemys += '(' + players[i].x + ',' + str(players[i].y) + ',' + str(players[i].colour) + ')'
 
 
     #отправляем новое состояние поля
     for playr in players:
         try:
-            mess = '<'
+            mess = '<(' + playr.enemys + ')'
             psevdo_x = playr.x - ((playr.x // RECT_SIZE) * RECT_SIZE)
             mess += str(psevdo_x)
             psevdo_y = playr.y - ((playr.y // RECT_SIZE) * RECT_SIZE)
@@ -241,6 +256,7 @@ while run_usl:
             mess += ',' + str(playr.pl_review)
             mess += '>'
             playr.conn.send(mess.encode())
+            playr.enemys=''
             playr.errors = 0
         except:
             playr.errors += 1
