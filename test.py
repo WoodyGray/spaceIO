@@ -1,1 +1,2 @@
-a = [1, ]
+str = 'aboba'
+print(str[1:])

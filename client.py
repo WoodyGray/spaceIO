@@ -12,41 +12,54 @@ class package():
     def __init__(self, data):
         self.data = data
 
-        self.otkr_package = None
-        self.zakr_package = None
-
         self.enemys = []
 
-    def find(self):
+    def find_borders(self):
+        otkr_package = None
+        run_usl = True
         for i in range(len(self.data)):
             if self.data[i] == '<':
-                self.otkr_package = i
+                otkr_package = i
 
-            if self.data[i] == '>' and self.otkr_package is not None:
-                self.zakr_package = i
-                res = self.data[self.otkr_package + 1:self.zakr_package]
-                res = list(res.split(','))
+            if self.data[i] == '>' and otkr_package is not None:
+                zakr_package = i
+                res = self.data[otkr_package + 1:zakr_package]
                 self.data = res
-        self.data = ''
+                run_usl = False
+                break
+        if run_usl is True:
+            self.data = ''
+
+    def split_all(self):
+        if self.data != '':
+            self.data = list(self.data.split(','))
 
 
 
     def find_enemys(self):
-        for j in range(self.otkr_package+2, self.zakr_package):
-            if data[j] == '(':
-                otkr_d = j
-            if data[j] == ')':
-                if otkr_d is not None:
-                    enemy = []
-                    enemy.append(int(data[j+1]))
-                    enemy.append(int(data[j + 3]))
-                    enemy.append(data[j + 5])
-                    self.enemys.append(enemy)
-                    otkr_d = None
-                else:
-                    self.data = self.data[0] + self.data[j+1:]
-                    break
         self.enemys = []
+        otkr = None
+        if self.data != '':
+            if self.data[0] =='(' and self.data[1] == '(':
+                for j in range(len(self.data[1:])):
+                    if data[j] == '(':
+                        otkr = j
+                    if data[j] == ')':
+                        if otkr is not None:
+                            enemy = []
+                            lst = list(self.data[otkr:j].split(','))
+                            enemy.append(int(lst[0]))
+                            enemy.append(int(lst[1]))
+                            enemy.append(lst[2][0])
+                            self.enemys.append(enemy)
+                            otkr = None
+                        else:
+                            self.data = self.data[j:]
+                            break
+            else:
+                self.data = self.data[2:]
+        else:
+            self.enemys = []
 
 
 def dw_list(data):
@@ -72,6 +85,9 @@ pygame.init()
 screen = pygame.display.set_mode((W_WINDOW, H_WINDOW))
 pygame.display.set_caption('spaceIO')
 
+#осздание пакета
+Package = package('')
+
 old_v = (0, 0)
 run_usl = True
 while run_usl:
@@ -96,9 +112,14 @@ while run_usl:
     #получаем от сервера новое состояние игроого поля
     data = pl_socket.recv(2**19)
     data = data.decode()
-    Package = package(data)
-    enemys = Package.find_enemys()
-    data = Package.find()
+
+    #распаковываем
+    Package.data = data
+    Package.find_borders()
+    Package.find_enemys()
+    enemys = Package.enemys
+    Package.split_all()
+    data = Package.data
 
     #рисуем новое состояние игрового поля
     screen.fill('gray20')
@@ -113,6 +134,15 @@ while run_usl:
             now_color = colours[new_lst_rect[i][j]]
 
             pygame.draw.rect(screen, now_color, (x, y, r, r))
+
+    #рисуем врагов
+    if len(enemys) > 0:
+        print(enemys)
+        for enemy in enemys:
+            x = enemy[0] + W_WINDOW//2
+            y = enemy[1] + H_WINDOW//2
+            c = enemy[2]
+            pygame.draw.circle(screen, colours[c], (x, y), START_SIZE)
 
 
     pygame.draw.circle(screen, (255, 0, 0),

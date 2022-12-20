@@ -75,7 +75,7 @@ class Player():
         if not (self.speed_y == self.speed_x == 0):
             if (squares[sqr_x][sqr_y].connection != self.conn):
                 squares[sqr_x][sqr_y].colour = self.colour
-                squares[sqr_x][sqr_y].connection = self.conn
+                squares[sqr_x][sqr_y].connection = self
                 squares[sqr_x][sqr_y].usl_static = False
                 self.trajectory.append([sqr_x,sqr_y])
                 if sqr_x > self.max_sqr[0]:
@@ -236,12 +236,30 @@ while run_usl:
             # i видит j
             if (dist_x <= (players[i].W_PL_WINDOW//2 + START_SIZE)) and \
                 (dist_y <= (players[i].H_PL_WINDOW//2 + START_SIZE)):
-                players[i].enemys += '(' + players[j].x + ',' + str(players[j].y) + ',' + str(players[j].colour) + ')'
+                if players[i].x - players[j].x <=0:
+                    x = abs(players[i].x - players[j].x)
+                else:
+                    x = players[j].x - players[i].x
+
+                if players[i].y - players[j].y <=0:
+                    y = abs(players[i].y - players[j].y)
+                else:
+                    y = players[j].y - players[i].y
+                players[i].enemys += '(' + str(x) + ',' + str(y) + ',' + players[j].colour + ')'
 
             # j видит i
             if (dist_x <= (players[j].W_PL_WINDOW//2 + START_SIZE)) and \
                 (dist_y <= (players[j].H_PL_WINDOW//2 + START_SIZE)):
-                players[j].enemys += '(' + players[i].x + ',' + str(players[i].y) + ',' + str(players[i].colour) + ')'
+                if players[j].x - players[i].x <= 0:
+                    x = abs(players[i].x - players[j].x)
+                else:
+                    x = players[i].x - players[j].x
+
+                if players[j].y - players[i].y <= 0:
+                    y = abs(players[j].y - players[i].y)
+                else:
+                    y = players[i].y - players[j].y
+                players[j].enemys += '(' + str(x) + ',' + str(y) + ',' + players[i].colour + ')'
 
 
     #отправляем новое состояние поля
