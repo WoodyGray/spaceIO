@@ -175,9 +175,7 @@ class Player():
             for j in range(upper_border[i][1], lower_border[i][1] + 1):
                 squares[x][j].connection = self
                 squares[x][j].colour = self.colour
-
-
-
+                squares[x][j].usl_static = True
 
 
 
