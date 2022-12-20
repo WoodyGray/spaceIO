@@ -44,6 +44,7 @@ class Player():
         self.r = r
         self.colour = colour
         self.errors = 0
+        self.usl_of_dead = False
 
         #for change_speed
         self.abs_speed = 10
@@ -64,6 +65,7 @@ class Player():
         self.min_sqr = [W_ROOM, H_ROOM]
 
 
+
     def update(self):
         if (self.x + self.speed_x) <= (W_ROOM-START_SIZE) and (self.x + self.speed_x) >= (0+START_SIZE):
             self.x += self.speed_x
@@ -73,7 +75,9 @@ class Player():
         sqr_y = math.floor(self.y / RECT_SIZE)
 
         if not (self.speed_y == self.speed_x == 0):
-            if (squares[sqr_x][sqr_y].connection != self.conn):
+            if (squares[sqr_x][sqr_y].connection != self):
+                if squares[sqr_x][sqr_y].connection is not None and not squares[sqr_x][sqr_y].usl_static:
+                    squares[sqr_x][sqr_y].connection.usl_of_dead = True
                 squares[sqr_x][sqr_y].colour = self.colour
                 squares[sqr_x][sqr_y].connection = self
                 squares[sqr_x][sqr_y].usl_static = False
@@ -125,10 +129,16 @@ class Player():
         while psevdo_x <= (self.x + (self.W_PL_WINDOW // 2)) and psevdo_x < W_ROOM:
             while copy_psevdo_y <= (self.y + (self.H_PL_WINDOW // 2)) and copy_psevdo_y < H_ROOM:
                 sqr = squares[psevdo_x // RECT_SIZE][copy_psevdo_y// RECT_SIZE]
-                if len(cnt_line) == 0:
-                    cnt_line += sqr.colour
+                if psevdo_x < 0 or copy_psevdo_y < 0:
+                    if len(cnt_line) == 0:
+                        cnt_line += 'n'
+                    else:
+                        cnt_line += ',' + 'n'
                 else:
-                    cnt_line += ',' + sqr.colour
+                    if len(cnt_line) == 0:
+                        cnt_line += sqr.colour
+                    else:
+                        cnt_line += ',' + sqr.colour
                 copy_psevdo_y += RECT_SIZE
             cnt_line = '{' + cnt_line + '}'
             if len(self.pl_review) == 2:
@@ -145,27 +155,27 @@ class Player():
                 x = (self.x - RECT_SIZE*(size//2) + RECT_SIZE*i)//RECT_SIZE
                 y = (self.y - RECT_SIZE*(size//2)  + RECT_SIZE * j)//RECT_SIZE
                 squares[x][y].colour = self.colour
-                squares[x][y].connection = self.conn
+                squares[x][y].connection = self
 
     def assignment(self, m_sqr, M_sqr):
         upper_border = []
         lower_border = []
         for i in range(m_sqr[0], M_sqr[0] + 1):
             for j in range(m_sqr[1], M_sqr[1] + 1):
-                if squares[i][j].connection == self.conn:
+                if squares[i][j].connection == self:
                     upper_border.append([i, j])
                     break
             for j in range(M_sqr[1] + 1, m_sqr[1], - 1):
-                if squares[i][j].connection == self.conn:
+                if squares[i][j].connection == self:
                     lower_border.append([i, j])
                     break
         min_len = min(len(upper_border), len(lower_border))
-        print(len(upper_border), len(lower_border))
         for i in range(min_len):
             x = upper_border[i][0]
             for j in range(upper_border[i][1], lower_border[i][1] + 1):
-                squares[x][j].connection = self.conn
+                squares[x][j].connection = self
                 squares[x][j].colour = self.colour
+
 
 
 
@@ -211,6 +221,7 @@ while run_usl:
         new_player = Player(new_socket, addr,
                             new_x, new_y,
                             START_SIZE, str(random.randint(1, 5)))
+        new_player.conn.send(new_player.colour.encode())
         new_player.create_start_space(3)
 
         players.append(new_player)
@@ -228,6 +239,7 @@ while run_usl:
             pass
         playr.update()
 
+    #кто кого видит
     for i in range(len(players)):
         for j in range(i+1, len(players)):
             dist_x = abs(players[i].x - players[j].x)
@@ -281,12 +293,13 @@ while run_usl:
 
     #чистим список от отвалившихся игроков
     for playr in players:
-        if playr.errors == 300:
+        if playr.errors == 300 or playr.usl_of_dead:
             for i in range(len(squares)):
                 for j in squares[i]:
-                    if j.connection == playr.conn:
+                    if j.connection == playr:
+                        j.connection = None
                         j.colour = '0'
-
+            playr.conn.send('<dead>'.encode())
             playr.conn.close()
             players.remove(playr)
 

@@ -116,16 +116,16 @@ while run_usl:
     #распаковываем
     Package.data = data
     Package.find_borders()
-    print(Package.data)
+    if Package.data == 'dead':
+        run_usl = False
+        break
     Package.find_enemys()
-    print(Package.data)
     enemys = Package.enemys
     Package.split_all()
     data = Package.data
 
     #рисуем новое состояние игрового поля
     screen.fill('gray20')
-    print(data)
     psevdo_x = -int(data[0])
     psevdo_y = -int(data[1])
     new_lst_rect = dw_list(data[2:])
@@ -140,7 +140,6 @@ while run_usl:
 
     #рисуем врагов
     if len(enemys) > 0:
-        print(enemys)
         for enemy in enemys:
             x = enemy[0] + W_WINDOW//2
             y = enemy[1] + H_WINDOW//2

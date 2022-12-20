@@ -7,6 +7,7 @@ colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '
 START_SIZE = 50
 RECT_SIZE = START_SIZE * 5 // 4
 SER_RECT_SIZE = 40
+OUR_COLOUR = '0'
 
 class package():
     def __init__(self, data):
@@ -79,6 +80,8 @@ pl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 pl_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 #подключение к серверу
 pl_socket.connect(('localhost', 6000))
+data = pl_socket.recv(2**5)
+OUR_COLOUR = data.decode()
 
 #создание окна
 pygame.init()
@@ -116,6 +119,9 @@ while run_usl:
     #распаковываем
     Package.data = data
     Package.find_borders()
+    if Package.data == 'dead':
+        run_usl = False
+        break
     Package.find_enemys()
     enemys = Package.enemys
     Package.split_all()
@@ -131,21 +137,25 @@ while run_usl:
             y = psevdo_y + j * SER_RECT_SIZE
             x = psevdo_x + i * SER_RECT_SIZE
             r = SER_RECT_SIZE
-            now_color = colours[new_lst_rect[i][j]]
+            if new_lst_rect[i][j] == 'n':
+                now_color = 'gray20'
+            else:
+                now_color = colours[new_lst_rect[i][j]]
 
             pygame.draw.rect(screen, now_color, (x, y, r, r))
 
     #рисуем врагов
     if len(enemys) > 0:
-        print(enemys)
         for enemy in enemys:
             x = enemy[0] + W_WINDOW//2
             y = enemy[1] + H_WINDOW//2
             c = enemy[2]
             pygame.draw.circle(screen, colours[c], (x, y), START_SIZE)
 
-
-    pygame.draw.circle(screen, (255, 0, 0),
+    #рисуем себя
+    pygame.draw.circle(screen, colours['0'],
+                       (W_WINDOW // 2, H_WINDOW // 2), START_SIZE + 2)
+    pygame.draw.circle(screen, colours[OUR_COLOUR],
                        (W_WINDOW//2, H_WINDOW//2), START_SIZE)
     pygame.display.update()
 
