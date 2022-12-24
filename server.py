@@ -5,7 +5,7 @@ import math
 
 W_ROOM, H_ROOM = 4000, 4000
 W_S_SCREEN, H_S_SCREEN = 300, 300
-FPS = 100
+FPS = 60
 RECT_SIZE = 40
 START_SIZE = 50
 colours = {'0':(8, 8, 8), '1':(255, 255, 0), '2':(255, 0, 0), '3':(0, 255, 0), '4':(0, 255, 255), '5':(128, 0, 128)}
@@ -36,7 +36,7 @@ class square():
 
 
 class Player():
-    def __init__(self, conn, addr, x, y, r, colour):
+    def __init__(self, conn, addr, x, y, r, colour, name):
         self.conn = conn
         self.addr = addr
         self.x = x
@@ -45,6 +45,7 @@ class Player():
         self.colour = colour
         self.errors = 0
         self.usl_of_dead = False
+        self.name = name
 
         #for change_speed
         self.abs_speed = 10
@@ -54,7 +55,7 @@ class Player():
         #for set_review
         self.enemys = ''
         self.pl_review = '[]'
-        self.W_PL_WINDOW = 600
+        self.W_PL_WINDOW = 800
         self.H_PL_WINDOW = 600
 
         #for assignment
@@ -181,12 +182,16 @@ class Player():
 
 
 
-
-#создание сокета IPv4 TCP
+# настройка главного сокета
+# создание сокета IPv4 TCP
 main_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+# отключение алгоритма Нейгла
 main_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
+# привязка сокета к порту
 main_socket.bind(('localhost', 6000))
+# чтобы сервер не останавливал программу в ожиданиие сообщения
 main_socket.setblocking(0)
+# переводим в режим прослушивания
 main_socket.listen(5)
 
 #создание граф окна сервера
@@ -212,13 +217,17 @@ while run_usl:
     try:
         #проверка на подключение
         new_socket, addr = main_socket.accept()
+        data = new_socket.recv(1024).decode()
+        data = data.split(',')
         print('Подключился: ', addr)
         new_socket.setblocking(0)
         new_x = (random.randint(RECT_SIZE * 2, W_ROOM - RECT_SIZE * 2) // RECT_SIZE) * RECT_SIZE
         new_y = (random.randint(RECT_SIZE * 2, H_ROOM - RECT_SIZE * 2) // RECT_SIZE) * RECT_SIZE
         new_player = Player(new_socket, addr,
                             new_x, new_y,
-                            START_SIZE, str(random.randint(1, 5)))
+                            START_SIZE, str(random.randint(1, 5)), data[0])
+        new_player.W_PL_WINDOW = int(data[1])
+        new_player.H_PL_WINDOW = int(data[2])
         new_player.conn.send(new_player.colour.encode())
         new_player.create_start_space(3)
 
@@ -297,7 +306,10 @@ while run_usl:
                     if j.connection == playr:
                         j.connection = None
                         j.colour = '0'
-            playr.conn.send('<dead>'.encode())
+            try:
+                playr.conn.send('<dead>'.encode())
+            except:
+                pass
             playr.conn.close()
             players.remove(playr)
 
