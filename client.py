@@ -121,21 +121,19 @@ def dw_list(data):
             lst = []
     return res
 
-# создание сокета IPv4 TCP
-pl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-pl_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
-
 # сбор начальных данных
-data = ''
+# создание экрана меню
 pygame.init()
 screen = pygame.display.set_mode((640, 480))
 clock = pygame.time.Clock()
 FONT = pygame.font.Font(None, 25)
+# создание полей ввода
 input_name = InputBox(280, 16, 300, 25)
 input_key = InputBox(230, 185, 220, 25)
 input_adres = InputBox(380, 245, 140, 25)
 input_boxes = [input_name, input_key, input_adres]
 
+# создание всех текстовых полей
 line1 = FONT.render('Введите имя длиной меньше 6: ', False, (255, 255, 255))
 exp1 = FONT.render('*поле не должно быть пустым', False, (255, 0, 0))
 name_exp2 = FONT.render('*слишком длинное имя', False, (255, 0, 0))
@@ -155,6 +153,7 @@ cnt_not_active_box = 0
 name = ''
 key = ''
 adres = ''
+# типы ошибок полей
 name_exception1 = False
 name_exception2 = False
 key_exception1 = False
@@ -162,6 +161,7 @@ key_exception2 = False
 key_exception3 = False
 adres_exception1 = False
 adres_exception2 = False
+
 done = False
 run_usl = True
 while not done:
@@ -175,6 +175,7 @@ while not done:
                     not key_exception1 and not key_exception2 and not key_exception3 and\
                     not adres_exception1 and not adres_exception2:
                 done = True
+
         for i in range(len(input_boxes)):
             input_boxes[i].handle_event(event)
             if i == 0:
@@ -257,6 +258,7 @@ while not done:
 
 
 # формируем сообщение для сервера
+data = ''
 data += name + ','
 if int(key) == 1:
     for m in get_monitors():
@@ -280,6 +282,10 @@ if adres != '0':
 else:
     ip = 'localhost'
     port = 6000
+
+# создание сокета IPv4 TCP
+pl_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+pl_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, 1)
 
 # подключение к серверу
 try:
