@@ -98,6 +98,7 @@ class package():
                             enemy.append(int(lst[0]))
                             enemy.append(int(lst[1]))
                             enemy.append(lst[2][0])
+                            enemy.append(lst[3])
                             self.enemys.append(enemy)
                             otkr = None
                         else:
@@ -108,6 +109,11 @@ class package():
         else:
             self.enemys = []
 
+def write_name(x, y, name):
+    font = pygame.font.Font(None, 25)
+    text = font.render(name, True, (0,0,0))
+    rect = text.get_rect(center=(x,y))
+    screen.blit(text, rect)
 
 def dw_list(data):
     res = []
@@ -150,7 +156,7 @@ line8 = FONT.render('Нажмите F12 чтобы играть', False, (255, 2
 
 
 cnt_not_active_box = 0
-name = ''
+NAME = ''
 key = ''
 adres = ''
 # типы ошибок полей
@@ -179,7 +185,7 @@ while not done:
         for i in range(len(input_boxes)):
             input_boxes[i].handle_event(event)
             if i == 0:
-                name = input_boxes[i].text
+                NAME = input_boxes[i].text
             if i == 1:
                 key = input_boxes[i].text
             if i == 2:
@@ -259,17 +265,20 @@ while not done:
 
 # формируем сообщение для сервера
 data = ''
-data += name + ','
-if int(key) == 1:
-    for m in get_monitors():
-        W_WINDOW = m.width
-        H_WINDOW = m.height
-elif int(key) == 2:
-    W_WINDOW = 800
-    H_WINDOW = 600
-elif int(key) == 3:
-    W_WINDOW = 600
-    H_WINDOW = 400
+data += NAME + ','
+try:
+    if int(key) == 1:
+        for m in get_monitors():
+            W_WINDOW = m.width
+            H_WINDOW = m.height
+    elif int(key) == 2:
+        W_WINDOW = 800
+        H_WINDOW = 600
+    elif int(key) == 3:
+        W_WINDOW = 600
+        H_WINDOW = 400
+except:
+    pass
 data += str(W_WINDOW) + ','
 data += str(H_WINDOW) + ','
 
@@ -370,12 +379,15 @@ while run_usl:
             x = enemy[0] + W_WINDOW//2
             y = enemy[1] + H_WINDOW//2
             c = enemy[2]
+            name = enemy[3]
             pygame.draw.circle(screen, colours[c], (x, y), START_SIZE)
+            write_name(x,y,name)
 
     # рисуем себя
     pygame.draw.circle(screen, colours['0'],
                        (W_WINDOW // 2, H_WINDOW // 2), START_SIZE + 2)
     pygame.draw.circle(screen, colours[OUR_COLOUR],
                        (W_WINDOW//2, H_WINDOW//2), START_SIZE)
+    write_name(W_WINDOW // 2, H_WINDOW // 2, NAME)
     pygame.display.update()
 pygame.quit()

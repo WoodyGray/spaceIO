@@ -242,7 +242,7 @@ while run_usl:
             data = find(data)
             # обробатываем команды игроков
             playr.change_speed(data)
-        except (Exception):
+        except:
             pass
         playr.update()
 
@@ -264,7 +264,7 @@ while run_usl:
                     y = abs(players[i].y - players[j].y)
                 else:
                     y = players[j].y - players[i].y
-                players[i].enemys += '(' + str(x) + ',' + str(y) + ',' + players[j].colour + ')'
+                players[i].enemys += '(' + str(x) + ',' + str(y) + ',' + players[j].colour + ',' + players[j].name + ')'
 
             # j видит i
             if (dist_x <= (players[j].W_PL_WINDOW//2 + START_SIZE)) and \
@@ -278,7 +278,7 @@ while run_usl:
                     y = abs(players[j].y - players[i].y)
                 else:
                     y = players[i].y - players[j].y
-                players[j].enemys += '(' + str(x) + ',' + str(y) + ',' + players[i].colour + ')'
+                players[j].enemys += '(' + str(x) + ',' + str(y) + ',' + players[i].colour + ',' + players[j].name + ')'
 
 
     #отправляем новое состояние поля
