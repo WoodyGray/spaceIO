@@ -302,7 +302,7 @@ try:
     pl_socket.send(data.encode())
     # считываем наш цвет выбранный сервером
     data = pl_socket.recv(2 ** 5)
-    OUR_COLOUR = data.decode()
+    OUR_COLOUR = data.decode()[0]
 except:
     run_usl = False
     screen.fill((30, 30, 30))
