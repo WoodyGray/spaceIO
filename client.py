@@ -221,6 +221,7 @@ while not done:
                             adres_exception2 = True
                         else:
                             adres_exception2 = False
+                            break
     else:
         name_exception1 = False
         name_exception2 = False
